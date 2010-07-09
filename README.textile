@@ -1,0 +1,76 @@
+h1. Turnstiles
+
+Turnstiles in a CodeIgniter library that allows you to use Feature Flags and User Buckets to deploy features.
+
+A User Bucket is simply a group of users (or a single user).  A Feature Flag allows the designated User Buckets to see new features you are deploying or beta testing.
+
+h1. Installation
+
+1.  Copy both the features.php and the buckets.php config files into application/config.
+2.  Copy Turnstiles.php into application/libraries.
+
+h1. Configuration
+
+h2. Feature Config
+
+Each $feature array item must have 2 keys:
+* 'enable' - Either TRUE or FALSE.  Allows you to completely disable a feature.
+* 'bucket' - Either the name of a bucket or an array of buckets.  This can also be set to '_all_' to open the feature up to ALL users.
+
+h3. Examples
+
+Using a single bucket:
+<pre><code>$features['feature1'] = array(
+    'enable'    => TRUE,
+    'bucket'    => 'group1'
+);</code></pre>
+
+Using multiple buckets:
+<pre><code>$features['feature2'] = array(
+ 'enable'    => TRUE,
+ 'bucket'    => array('group2', 'group3')
+);</code></pre>
+
+When you want to ENABLE the feature for ALL users:
+<pre><code>$features['feature2'] = array(
+ 'enable'    => TRUE,
+ 'bucket'    => '_all_'
+);</code></pre>
+
+Setting 'enable' to *FALSE* will ignore the 'bucket' parameter and disable the feature no matter what:
+<pre><code>$features['feature2'] = array(
+ 'enable'    => FALSE,
+ 'bucket'    => 'group1'
+);</code></pre>
+
+h2. Bucket Config
+
+Each $bucket item can be ant of the following:
+
+* An array of ints
+* An array of strings
+* An int
+* A string
+* A range in the form of a string (i.e. '1-100')
+
+h3. Examples
+
+<pre><code>$buckets['group1'] = array(23, 5, 12);
+$buckets['group2'] = array('user1', 'user2', 'user3');
+$buckets['group3'] = 45;
+$buckets['group4'] = 'user1';
+$buckets['group5'] = '1-100';</code></pre>
+
+h1. Usage
+
+h2. Loading the Library
+
+You can either autoload the library or load it the normal way via @$this->load->library('turnstiles');@.
+
+All this does is loads the class into memory...nothing else.  The config files are not read until the first time you use the restrict() function.
+
+h2. View Usage
+
+<pre><code><?php if(Turnstiles::restrict('feature_name', $user_id)): ?>
+New Feature
+<?php endif; ?></code></pre>
