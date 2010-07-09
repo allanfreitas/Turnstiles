@@ -19,12 +19,12 @@ class Turnstiles
     /**
      * Holds the features from the config
      */
-    private static $_features;
+    private static $_features = array();
     
     /**
      * Holds the buckets from the config
      */
-    private static $_buckets;
+    private static $_buckets = array();
     
     /**
      * Init
@@ -38,23 +38,27 @@ class Turnstiles
     {
         static $initialized = FALSE;
         
+        // Make sure we only run init() once
         if($initialized)
         {
             return;
         }
-        // Check if the 2 config files exist
-        file_exists(APPPATH . 'config/features.php') OR show_error('Features config file is missing.');
-        file_exists(APPPATH . 'config/buckets.php') OR show_error('Buckets config file is missing.');
-        
-        // Include the config files
-        include APPPATH . 'config/features.php';
-        include APPPATH . 'config/buckets.php';
-        
-        self::$_features = $features;
-        self::$_buckets = $buckets;
-        
-        // Unset the config arrays to free up the memory
-        unset($features, $buckets);
+
+        // If the features config file exists, load it.
+        if(file_exists(APPPATH . 'config/features.php'))
+        {
+            include APPPATH . 'config/features.php';
+            self::$_features = array_merge($features, self::$_features);
+            unset($features);
+        }
+
+        // If the buckets config file exists, load it.
+        if(file_exists(APPPATH . 'config/buckets.php'))
+        {
+            include APPPATH . 'config/buckets.php';
+            self::$_buckets = array_merge($buckets, self::$_buckets);
+            unset($buckets);
+        }
 
         $initialized = TRUE;
     }
@@ -73,8 +77,8 @@ class Turnstiles
     {
         // Initialize the library
         self::init();
-        
-        isset(self::$_features[$feature_name]) OR show_error(sprintf('Feature "%s" does not exist in the config.', $feature_name));
+
+        isset(self::$_features[$feature_name]) OR show_error('Feature "' . $feature_name . '" does not exist.');
         
         $feature = self::$_features[$feature_name];
         if($feature['enable'] === FALSE)
@@ -137,7 +141,45 @@ class Turnstiles
         }
         return $found;
     }
-    
+
+    /**
+     * Add Feature
+     *
+     * Adds a feature into the in-memory config
+     *
+     * @access  public
+     * @param   string  $name
+     * @param   array   $feature
+     * @return  void
+     */
+    public static function add_feature($name, $feature)
+    {
+        isset(self::$_features[$name]) AND show_error('Feature "' . $name . '" already exists.');
+        
+        if(!isset($feature['enable']) OR !isset($feature['bucket']))
+        {
+            show_error('Invalid feature format for "' . $name . '" in add_feature()');
+        }
+        
+        self::$_features[$name] = $feature;
+    }
+
+    /**
+     * Add Bucket
+     *
+     * Adds a bucket into the in-memory config
+     *
+     * @access  public
+     * @param   string  $name
+     * @param   array   $bucket
+     * @return  void
+     */
+    public static function add_bucket($name, $bucket)
+    {
+        (isset(self::$_buckets[$name]) OR $name == '_all_') AND show_error('Bucket "' . $name . '" already exists.');
+        
+        self::$_buckets[$name] = $bucket;
+    }
 }
 
 /**

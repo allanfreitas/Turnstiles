@@ -6,10 +6,12 @@ A User Bucket is simply a group of users (or a single user).  A Feature Flag all
 
 h1. Installation
 
-1.  Copy both the features.php and the buckets.php config files into application/config.
+1.  *OPTIONAL* - Copy both the features.php and the buckets.php config files into application/config.
 2.  Copy Turnstiles.php into application/libraries.
 
 h1. Configuration
+
+Feature files are *optional* but you can use them as follows.
 
 h2. Feature Config
 
@@ -74,3 +76,18 @@ h2. View Usage
 <pre><code><?php if(Turnstiles::restrict('feature_name', $user_id)): ?>
 New Feature
 <?php endif; ?></code></pre>
+
+h2. Add Features and Buckets
+
+You can add features and buckets on the fly by using the *add_function()* and *add_bucket()* functions.
+
+h3. Examples
+
+<pre><code>$new_feature = array(
+    'enable'    => TRUE,
+    'bucket'    => 'some_bucket'
+);
+Turnstiles::add_feature('new_feature', $new_feature);</code></pre>
+
+<pre><code>$new_bucket = array(34,1,90,4567);
+Turnstiles::add_bucket('some_bucket', $new_bucket);</code></pre>
