@@ -127,7 +127,7 @@ class Turnstiles
         }
         
         
-        if($feature['enable'] === FALSE)
+        if(!$feature['enable'])
         {
             return FALSE;
         }
