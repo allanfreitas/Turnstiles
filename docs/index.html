@@ -1,0 +1,302 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Turnstiles</title>
+
+<style type='text/css' media='all'>@import url('./userguide.css');</style>
+<link rel='stylesheet' type='text/css' media='all' href='../userguide.css' />
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/functions.js"></script>
+
+<meta http-equiv='expires' content='-1' />
+<meta http-equiv= 'pragma' content='no-cache' />
+<meta name='robots' content='all' />
+
+</head>
+<body>
+
+<!-- START NAVIGATION -->
+<div id="nav"><div id="nav_inner">
+<table cellpadding="0" cellspacing="0" border="0" style="width:98%">
+	<tr>
+		<td class="td" valign="top">
+			<h3>Author Info</h3>
+			<ul>
+				<li><a href="http://dhorrigan.com">Dan Horrigan</a></li>
+				<li><a href="http://github.com/dhorrigan">GitHub</a></li>
+			</ul>
+			<h3>Basic Info</h3>
+			<ul>
+				<li><a href="#license">License</a></li>
+				<li><a href="http://github.com/dhorrigan/Turnstiles">GitHub Repo</a></li>
+			</ul>
+			<h3>Introduction</h3>
+			<ul>
+				<li><a href="#install">Installation</a></li>
+				<li><a href="#loading">Loading the Library</a></li>
+			</ul>
+		</td>
+		<td class="td_sep" valign="top">
+    		<h3>Configuration</h3>
+    		<ul>
+			    <li><a href="#config">General</a></li>
+    			<li><a href="#use_config">Using Config Files</a></li>
+    			<li><a href="#use_models">Using Models</a></li>
+    		</ul>
+			<h3>Class Functions</h3>
+			<ul>
+				<li><a href="#restrict">Turnstiles::restrict()</a></li>
+				<li><a href="#add_feature">Turnstiles::add_feature()</a></li>
+				<li><a href="#add_bucket">Turnstiles::add_bucket()</a></li>
+			</ul>
+    	</td>
+    	<td class="td_sep" valign="top">
+			<h3>Helper Functions</h3>
+			<ul>
+				<li><a href="#in_str_range">in_str_range()</a></li>
+				<li><a href="#in_arrayi">in_arrayi()</a></li>
+			</ul>
+		</td>
+	</tr>
+</table>
+</div></div>
+<div id="nav2"><a name="top">&nbsp;</a><a href="#" id="toggle_toc"><img src="images/nav_toggle_darker.jpg" width="154" height="43" border="0" title="Toggle Table of Contents" alt="Toggle Table of Contents" /></a></div>
+<div id="masthead">
+<table cellpadding="0" cellspacing="0" border="0" style="width:100%">
+<tr>
+<td><h1>Documentation</h1></td>
+<td id="breadcrumb_right">Author:<a href="http://dhorrigan.com">Dan Horrigan</a></td>
+</tr>
+</table>
+</div>
+<!-- END NAVIGATION -->
+
+
+<!-- START BREADCRUMB -->
+<table cellpadding="0" cellspacing="0" border="0" style="width:100%">
+<tr>
+<td id="breadcrumb">
+<a href="http://dhorrigan.com/turnstiles">Turnstiles</a> &nbsp;&#8250;&nbsp;
+Documentation
+</td>
+</tr>
+</table>
+<!-- END BREADCRUMB -->
+
+<br clear="all" />
+
+
+<!-- START CONTENT -->
+<div id="content">
+
+
+<h1>Turnstiles</h1>
+
+<p>Turnstiles in a CodeIgniter library that allows you to use Feature Flags and User Buckets to deploy features.</p>
+
+<p>A User Bucket is simply a group of users (or a single user).  A Feature Flag allows the designated User Buckets to see new features you are deploying or beta testing.</p>
+
+<a name="license"></a>
+<h2>License</h2>
+
+<p>Formation is released under the Apache License v2.0. You can read the license here: <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+
+<a name="install"></a>
+<h2>Installation</h2>
+
+<ol>
+	<li>Head over to the GitHub repo and download the latest version: <a href="http://github.com/dhorrigan/Turnstiles">http://github.com/dhorrigan/Turnstiles</a></li>
+	<li>Copy the libraries/Turnstiles.php file into your application/libraries folder.</li>
+	<li>Copy the config/turnstiles.php file into your application/config folder.</li>
+</ol>
+
+<a name="loading"></a>
+<h2>Loading Turnstiles</h2>
+
+<p>You load Turnstiles just link any other library:</p>
+<pre>$this->load->library('turnstiles');</pre>
+
+<p>You can also autoload the library.</p>
+
+
+<a name="config"></a>
+<h2>Configuration Options</h2>
+
+<p>You can configure Turnstiles in 2 different ways:</p>
+<ol>
+    <li>To use configuration files for Features and Buckets</li>
+    <li>To use Models for Features and Buckets</li>
+</ol>
+
+<p>This is done by changing the 'use_models' config option in config/turnstiles.php.</p>
+<ul>
+    <li>If set to TRUE, it will use the models only (ignoring configs).</li>
+    <li>If set to FALSE, it will use the config files only.</li>
+</ul>
+
+<a name="use_config"></a>
+<h2>Using Config Files</h2>
+
+<p>To use the configuration files set 'use_models' = FALSE in config/turnstiles.php.  Then copy the features.php and buckets.php configuration files into your config directory.</p>
+
+<h3>Feature Config</h3>
+
+<p>Each $feature array item must have 2 keys:</p>
+<ul>
+    <li>'enable' - Either TRUE or FALSE.  Allows you to completely disable a feature.</li>
+    <li>'bucket' - Either the name of a bucket or an array of buckets.  This can also be set to '_all_' to open the feature up to ALL users.</li>
+</ul>
+
+<p><b>Examples:</b></p>
+<p>Using a single bucket:</p>
+<pre>$features['feature1'] = array(
+    'enable' => TRUE,
+    'bucket' => 'group1'
+);</pre>
+
+<p>Using multiple buckets:</p>
+<pre>$features['feature2'] = array(
+    'enable' => TRUE,
+    'bucket' => array('group2', 'group3')
+);</pre>
+
+<p>When you want to ENABLE the feature for ALL users:</p>
+<pre>$features['feature2'] = array(
+    'enable' => TRUE,
+    'bucket' => '_all_'
+);</pre>
+
+<p>Setting 'enable' to FALSE will ignore the 'bucket' parameter and disable the feature no matter what:</p>
+<pre>$features['feature2'] = array(
+    'enable' => FALSE,
+    'bucket' => 'group1'
+);</pre>
+
+<a name="bucket_config"></a>
+<h3>Bucket Config</h3>
+<p>Each $bucket item can be ant of the following:</p>
+<ul>
+    <li>An array of ints</li>
+    <li>An array of strings</li>
+    <li>An int</li>
+    <li>A string</li>
+    <li>A range in the form of a string (i.e. '1-100')</li>
+</ul>
+
+<p><b>Examples</b></p>
+
+<pre>$buckets['group1'] = array(23, 5, 12);
+$buckets['group2'] = array('user1', 'user2', 'user3');
+$buckets['group3'] = 45;
+$buckets['group4'] = 'user1';
+$buckets['group5'] = '1-100';</pre>
+
+<a name="use_models"></a>
+<h2>Using Models</h2>
+<p class="important"><strong>NOTE:</strong> There are example models included in the GitHub repo.</p>
+<p>You can use Models to allow you to store the features in buckets in any storage solution of your choice.  You can do this by writing your own models, then tell Turnstiles to use them.  To use Models you must set 'use_models' = TRUE in config/turnstiles.php.</p>
+<p>You will also need to set 'feature_model' and 'bucket_model' to the models that you want Turnstiles to use.</p>
+<p>Each model has a few required functions for them to work with Turnstiles.  However, you can add your own additional functions for your use to add/remove/update the features and buckets.</p>
+
+<a name="feature_model"></a>
+<h3>Feature Model Requirements</h3>
+<p>The feature model requires the following <b>public</b> function:</p>
+<h4 style="border-bottom: 1px solid #999999; padding-bottom: 5px">get($name)</h4>
+<p><b>Parameters:</b></p>
+<blockquote>
+<ul>
+    <li>(string) <b>$name</b> - The name of the feature to retrieve.</li>
+</ul>
+</blockquote>
+
+<p><b>Return Value:</b></p>
+<blockquote>
+<p>get() must return a keyed array in the following format:</p>
+<pre>array(
+    'enable' => <i>enable_value (bool)</i>,
+    'bucket' => <i>bucket_value (string, int or array)</i>
+);</pre>
+</blockquote>
+
+<a name="bucket_model"></a>
+<h3>Bucket Model Requirements</h3>
+<p>The bucket model requires the following <b>public</b> function:</p>
+<h4 style="border-bottom: 1px solid #999999; padding-bottom: 5px">contains($name, $id)</h4>
+<p><b>Parameters:</b></p>
+<blockquote>
+<ul>
+    <li>(string) <b>$name</b> - The name of the bucket to check.</li>
+    <li>(string or int) <b>$id</b> - The id to check the bucket for.</li>
+</ul>
+</blockquote>
+
+<p><b>Return Value:</b></p>
+<blockquote>
+<p>contains() needs to return a <b>boolean</b> of whether the $id exists in the bucket.</p>
+</blockquote>
+<p class="important"><strong>Note:</strong>&nbsp;You are required to check <a href="#bucket_config">all possible values</a> for a bucket.  The function <a href="#in_str_range">in_str_range()</a> can be used to check buckets that are ranges (i.e. in_str_range($user_id, '1-100');).</p>
+
+<br />
+<h1>Class Function Reference</h1>
+<a name="restrict"></a>
+<h2>Turnstiles::restrict()</h2>
+<p>Restrict is used to protect features based on a user bucket.</p>
+
+<p><b>Usage</b></p>
+<pre>&lt;?php if(Turnstiles::restrict('feature_name', $user_id)): ?&gt;
+New Feature
+&lt;?php endif; ?&gt;</pre>
+
+<a name="add_feature"></a>
+<h2>Turnstiles::add_feature()</h2>
+<p class="important"><strong>NOTE:</strong> This function is ONLY available when NOT using models.</p>
+<p>This function will add a feature into memory.  This allows you to add features in code instead of in the config files.</p>
+
+<p><b>Usage</b></p>
+<pre>$feature_config = array(
+    'enable' => TRUE,
+    'bucket' => 'group1'
+);
+Turnstiles::add_feature('feature_name', $feature_config);</pre>
+
+<a name="add_bucket"></a>
+<h2>Turnstiles::add_bucket()</h2>
+<p class="important"><strong>NOTE:</strong> This function is ONLY available when NOT using models.</p>
+<p>This function will add a bucket into memory.  This allows you to add buckets in code instead of in the config files.</p>
+
+<p><b>Usage</b></p>
+<pre>$bucket_config = array(23, 5, 12, 34, 23, 456, 56,23);
+Turnstiles::add_bucket('bucket_name', $bucket_config);</pre>
+
+<br />
+<h1>Helper Function Reference</h1>
+<a name="in_str_range"></a>
+<h2>in_str_range()</h2>
+<p>This is used to check if an integer (i.e. user id) is in a string range (i.e. '1-100').</p>
+<p>You will use this in your Bucket Model to check range buckets.</p>
+
+<p><b>Usage</b></p>
+<pre>in_str_range($user_id, '1-100');</pre>
+
+<a name="in_arrayi"></a>
+<h2>in_arrayi()</h2>
+<p>This acts the same as the native PHP in_array() function, except that it is NOT case-sensitive.</p>
+
+<p><b>Usage</b></p>
+<pre>in_arrayi($username, $bucket_array);</pre>
+
+</div>
+<!-- END CONTENT -->
+
+
+<div id="footer">
+<p>
+<a href="#top">Top of Page</a>
+</p>
+<p><a href="http://codeigniter.com">CodeIgniter</a> &nbsp;&middot;&nbsp; Copyright &#169; 2010 Dan Horrigan &nbsp;&middot;&nbsp; <a href="http://ellislab.com/">Ellislab, Inc.</a></p>
+</div>
+
+</body>
+</html>

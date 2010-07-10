@@ -4,90 +4,17 @@ Turnstiles in a CodeIgniter library that allows you to use Feature Flags and Use
 
 A User Bucket is simply a group of users (or a single user).  A Feature Flag allows the designated User Buckets to see new features you are deploying or beta testing.
 
-h1. Installation
+h1. Documentation
 
-1.  *OPTIONAL* - Copy both the features.php and the buckets.php config files into application/config.
-2.  Copy Turnstiles.php into application/libraries.
+Documentation can be found here: "http://dhorrigan.com/turnstiles":http://dhorrigan.com/turnstiles
 
-h1. Configuration
+h1. Author
 
-Feature files are *optional* but you can use them as follows.
+*Dan Horrigan*
 
-h2. Feature Config
+Website: "http://dhorrigan.com":http://dhorrigan.com
+Twittter: "@dhorrigan":http://twitter.com/dhorrigan
 
-Each $feature array item must have 2 keys:
-* 'enable' - Either TRUE or FALSE.  Allows you to completely disable a feature.
-* 'bucket' - Either the name of a bucket or an array of buckets.  This can also be set to '_all_' to open the feature up to ALL users.
+h2. Inspiration
 
-h3. Examples
-
-Using a single bucket:
-<pre><code>$features['feature1'] = array(
-    'enable'    => TRUE,
-    'bucket'    => 'group1'
-);</code></pre>
-
-Using multiple buckets:
-<pre><code>$features['feature2'] = array(
- 'enable'    => TRUE,
- 'bucket'    => array('group2', 'group3')
-);</code></pre>
-
-When you want to ENABLE the feature for ALL users:
-<pre><code>$features['feature2'] = array(
- 'enable'    => TRUE,
- 'bucket'    => '_all_'
-);</code></pre>
-
-Setting 'enable' to *FALSE* will ignore the 'bucket' parameter and disable the feature no matter what:
-<pre><code>$features['feature2'] = array(
- 'enable'    => FALSE,
- 'bucket'    => 'group1'
-);</code></pre>
-
-h2. Bucket Config
-
-Each $bucket item can be ant of the following:
-
-* An array of ints
-* An array of strings
-* An int
-* A string
-* A range in the form of a string (i.e. '1-100')
-
-h3. Examples
-
-<pre><code>$buckets['group1'] = array(23, 5, 12);
-$buckets['group2'] = array('user1', 'user2', 'user3');
-$buckets['group3'] = 45;
-$buckets['group4'] = 'user1';
-$buckets['group5'] = '1-100';</code></pre>
-
-h1. Usage
-
-h2. Loading the Library
-
-You can either autoload the library or load it the normal way via @$this->load->library('turnstiles');@.
-
-All this does is loads the class into memory...nothing else.  The config files are not read until the first time you use the restrict() function.
-
-h2. View Usage
-
-<pre><code><?php if(Turnstiles::restrict('feature_name', $user_id)): ?>
-New Feature
-<?php endif; ?></code></pre>
-
-h2. Add Features and Buckets
-
-You can add features and buckets on the fly by using the *add_function()* and *add_bucket()* functions.
-
-h3. Examples
-
-<pre><code>$new_feature = array(
-    'enable'    => TRUE,
-    'bucket'    => 'some_bucket'
-);
-Turnstiles::add_feature('new_feature', $new_feature);</code></pre>
-
-<pre><code>$new_bucket = array(34,1,90,4567);
-Turnstiles::add_bucket('some_bucket', $new_bucket);</code></pre>
+"Kyle Bragger/Forrst":http://forrst.com
