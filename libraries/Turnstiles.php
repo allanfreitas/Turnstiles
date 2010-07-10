@@ -10,6 +10,11 @@
  */
 
 /**
+ * This is where the config files are stored
+ */
+define('TS_CONFIG_PATH', APPPATH . 'config/');
+
+/**
  * Turnstiles
  *
  * @subpackage  Turnstiles
@@ -27,6 +32,16 @@ class Turnstiles
     private static $_buckets = array();
     
     /**
+     * Holds the turnstiles config
+     */
+    private static $_config = array();
+
+    /**
+     * The CI super object
+     */
+    private static $_ci;
+    
+    /**
      * Init
      *
      * Checks to make sure the config files exist and loads them in.
@@ -38,6 +53,24 @@ class Turnstiles
     {
         static $initialized = FALSE;
         
+        if(file_exists(TS_CONFIG_PATH . 'turnstiles.php'))
+        {
+            include TS_CONFIG_PATH . 'turnstiles.php';
+            self::$_config = $turnstiles;
+            unset($turnstiles);
+        }
+        else
+        {
+            show_error('Main turnstiles config not found at ' . TS_CONFIG_PATH);
+        }
+
+        if(self::$_config['use_models'])
+        {
+            self::$_ci =& get_instance();
+            self::$_ci->load->model(self::$_config['feature_model'], 'feature_model');
+            self::$_ci->load->model(self::$_config['bucket_model'], 'bucket_model');
+        }
+
         // Make sure we only run init() once
         if($initialized)
         {
@@ -45,17 +78,17 @@ class Turnstiles
         }
 
         // If the features config file exists, load it.
-        if(file_exists(APPPATH . 'config/features.php'))
+        if(!self::$_config['use_models'] AND file_exists(TS_CONFIG_PATH . 'features.php'))
         {
-            include APPPATH . 'config/features.php';
+            include TS_CONFIG_PATH . 'features.php';
             self::$_features = array_merge($features, self::$_features);
             unset($features);
         }
 
         // If the buckets config file exists, load it.
-        if(file_exists(APPPATH . 'config/buckets.php'))
+        if(!self::$_config['use_models'] AND file_exists(TS_CONFIG_PATH . 'buckets.php'))
         {
-            include APPPATH . 'config/buckets.php';
+            include TS_CONFIG_PATH . 'buckets.php';
             self::$_buckets = array_merge($buckets, self::$_buckets);
             unset($buckets);
         }
@@ -78,9 +111,22 @@ class Turnstiles
         // Initialize the library
         self::init();
 
-        isset(self::$_features[$feature_name]) OR show_error('Feature "' . $feature_name . '" does not exist.');
+        if(!self::$_config['use_models'] AND isset(self::$_features[$feature_name]))
+        {
+            $feature = self::$_features[$feature_name];
+        }
+        elseif(self::$_config['use_models'])
+        {
+            $feature = self::$_ci->feature_model->get($feature_name);
+            self::$_features[$feature_name] = $feature;
+        }
+
+        if(!$feature)
+        {
+            show_error('Feature "' . $feature_name . '" does not exist.');
+        }
         
-        $feature = self::$_features[$feature_name];
+        
         if($feature['enable'] === FALSE)
         {
             return FALSE;
@@ -96,47 +142,40 @@ class Turnstiles
         $found = FALSE;
         
         // Doing a foreach allows for multiple buckets per feature
-        foreach((array) $feature_bucket as $bucket)
+        foreach((array) $feature_bucket as $bucket_name)
         {
-            if(isset(self::$_buckets[$bucket]))
+            if(!self::$_config['use_models'] AND isset(self::$_buckets[$bucket_name]))
             {
-                if(is_array(self::$_buckets[$bucket]))
+                $bucket = self::$_buckets[$bucket_name];
+            }
+            elseif(self::$_config['use_models'])
+            {
+                if(self::$_ci->bucket_model->contains($bucket_name, $id))
                 {
-                    if(in_arrayi($id, self::$_buckets[$bucket]))
-                    {
-                        $found = TRUE;
-                        break;
-                    }
+                    return TRUE;
                 }
-                else
-                {
-                    $dash_pos = strpos(self::$_buckets[$bucket], '-');
+            }
 
-                    // The bucket is not a range
-                    if($dash_pos === FALSE)
-                    {
-                        if(self::$_buckets[$bucket] == $id)
-                        {
-                            $found = TRUE;
-                            break;
-                        }
-                    }
-                    // The bucket is range
-                    else
-                    {
-                        $start = substr(self::$_buckets[$bucket], 0, $dash_pos);
-                        $end = substr(self::$_buckets[$bucket], $dash_pos + 1);
-                        if($id >= $start AND $id <= $end)
-                        {
-                            $found = TRUE;
-                            break;
-                        }
-                    }
+            if(!$bucket)
+            {
+                show_error('Bucket "' . $bucket_name . '" does not exist.');
+            }
+            
+            if(is_array($bucket))
+            {
+                if(in_arrayi($id, $bucket))
+                {
+                    $found = TRUE;
+                    break;
                 }
             }
             else
             {
-                show_error(sprintf('Bucket "%s" does not exist in the config.', $bucket));
+                if(in_str_range($bucket, $id))
+                {
+                    $found = TRUE;
+                    break;
+                }
             }
         }
         return $found;
@@ -154,14 +193,16 @@ class Turnstiles
      */
     public static function add_feature($name, $feature)
     {
-        isset(self::$_features[$name]) AND show_error('Feature "' . $name . '" already exists.');
-        
-        if(!isset($feature['enable']) OR !isset($feature['bucket']))
+        self::init();
+
+        if(self::$_config['use_models'])
         {
-            show_error('Invalid feature format for "' . $name . '" in add_feature()');
+            $this->_ci->feature_model->add($name, $feature);
         }
-        
-        self::$_features[$name] = $feature;
+        else
+        {
+            self::$_features[$name] = $feature;
+        }
     }
 
     /**
@@ -176,9 +217,16 @@ class Turnstiles
      */
     public static function add_bucket($name, $bucket)
     {
-        (isset(self::$_buckets[$name]) OR $name == '_all_') AND show_error('Bucket "' . $name . '" already exists.');
-        
-        self::$_buckets[$name] = $bucket;
+        self::init();
+
+        if(self::$_config['use_models'])
+        {
+            $this->_ci->bucket_model->add($name, $bucket);
+        }
+        else
+        {
+            self::$_buckets[$name] = $bucket;
+        }
     }
 }
 
@@ -196,4 +244,37 @@ function in_arrayi($needle, $haystack)
     return in_array(strtolower($needle), array_map('strtolower', $haystack));
 }
 
-/* End of file: Feature.php */
+/**
+ * in_str_range
+ *
+ * Checks if the needle is in a given range in string format (i.e. '1-100')
+ *
+ * @param   mixed   $needle
+ * @param   array   $haystack
+ * @return  bool
+ */
+function in_str_range($needle, $haystack)
+{
+    $dash_pos = strpos($haystack, '-');
+
+    if($dash_pos === FALSE)
+    {
+        if($haystack == $needle)
+        {
+            return TRUE;
+        }
+    }
+    else
+    {
+        $start = substr($haystack, 0, $dash_pos);
+        $end = substr($haystack, $dash_pos + 1);
+        if($needle >= $start AND $needle <= $end)
+        {
+            return TRUE;
+        }
+    }
+    
+    return FALSE;
+}
+
+/* End of file: Turnstiles.php */
