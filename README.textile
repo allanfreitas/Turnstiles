@@ -1,6 +1,6 @@
 h1. Turnstiles
 
-Turnstiles in a CodeIgniter library that allows you to use Feature Flags and User Buckets to deploy features.
+Turnstiles is a CodeIgniter library that allows you to use Feature Flags and User Buckets to deploy features.
 
 A User Bucket is simply a group of users (or a single user).  A Feature Flag allows the designated User Buckets to see new features you are deploying or beta testing.
 
