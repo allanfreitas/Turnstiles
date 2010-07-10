@@ -197,7 +197,7 @@ class Turnstiles
 
         if(self::$_config['use_models'])
         {
-            $this->_ci->feature_model->add($name, $feature);
+            show_error('You cannot use the add_feature() function while using Models');
         }
         else
         {
@@ -221,7 +221,7 @@ class Turnstiles
 
         if(self::$_config['use_models'])
         {
-            $this->_ci->bucket_model->add($name, $bucket);
+            show_error('You cannot use the add_bucket() function while using Models');
         }
         else
         {
