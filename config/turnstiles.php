@@ -10,7 +10,7 @@ $turnstiles['use_models'] = FALSE;
 /**
  * Set the model names for features and buckets
  */
-$turnstiles['feature_model'] = 'feature_model';
-$turnstiles['bucket_model'] = 'bucket_model';
+$turnstiles['feature_model'] = 'redis/feature_model';
+$turnstiles['bucket_model'] = 'redis/bucket_model';
 
 /* End of file turnstiles.php */
