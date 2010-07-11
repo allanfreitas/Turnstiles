@@ -126,7 +126,6 @@ class Turnstiles
             show_error('Feature "' . $feature_name . '" does not exist.');
         }
         
-        
         if(!$feature['enable'])
         {
             return FALSE;
@@ -153,6 +152,10 @@ class Turnstiles
                 if(self::$_ci->bucket_model->contains($bucket_name, $id))
                 {
                     return TRUE;
+                }
+                else
+                {
+                    return FALSE;
                 }
             }
 
